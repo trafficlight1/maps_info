@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Lviv 3D Map Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    <style>
+        body { margin: 0; padding: 0; background-color: #000; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        /* Стилізація інтерфейсу кнопок */
+        .controls {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border-radius: 50px;
+            border: 1px solid #333;
+            z-index: 10;
+        }
+
+        .layer-btn {
+            background: transparent;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .layer-btn:hover {
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .layer-btn.active {
+            background: #fff;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="controls">
+    <button class="layer-btn" onclick="elevateLayer('parks')">Парки</button>
+    <button class="layer-btn" onclick="elevateLayer('streets')">Магістралі</button>
+    <button class="layer-btn" onclick="elevateLayer('housing')">Історичний</button>
+</div>
+
+
+<script>
+    // 1. Вставте сюди ваш токен доступу Mapbox
+    mapboxgl.accessToken = 'pk.eyJ1IjoibHZpdiIsImEiOiJjbWl4MXQ0dG4wMmRoM2VzNzZvMzlmODVmIn0.FpjKdCBZR8neb-2imEu-xA';
+
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: {
+            "version": 8,
+            "name": "Dark Empty",
+            "sources": {},
+            "layers": [
+                {
+                    "id": "background",
+                    "type": "background",
+                    "paint": { "background-color": "#000" }
+                }
+            ]
+        },
+        center: [24.0311, 49.8329], // Львів
+        zoom: 13.2,
+        pitch: 45,
+        bearing: 0,
+        antialias: true,
+        preserveDrawingBuffer: true,
+        // --- ПОВНЕ БЛОКУВАННЯ (СТАТИЧНА КАРТА) ---
+        interactive: false // Цей один параметр вимикає все: перетягування, зум, крутіння
+    });
+
+    map.on('load', () => {
+        
+        // --- 1. ПАРКИ (Зелений) ---
+        map.addSource('parks-source', {
+            type: 'geojson',
+            data: 'data/park.geojson' // Переконайтеся, що файл існує
+        });
+
+        map.addLayer({
+            'id': 'parks-layer',
+            'type': 'fill-extrusion',
+            'source': 'parks-source',
+            'paint': {
+                'fill-extrusion-color': '#00e676',
+                'fill-extrusion-height': 10, // Товщина шару
+                'fill-extrusion-base': 0,    // Початкова висота (земля)
+                'fill-extrusion-opacity': 0.8
+            }
+        });
+
+        // --- 2. МАГІСТРАЛІ (Блакитний) ---
+        // Важливо: Щоб підняти дороги, вони мають бути полігонами (fill-extrusion).
+        // Якщо у вас GeoJSON ліній, Mapbox не зможе їх підняти властивістю base.
+        // Я залишу тут тип line для сумісності з вашим кодом, але він НЕ підніметься.
+        // Щоб працювало підняття, змініть roads.json на полігони і тип на fill-extrusion.
+        map.addSource('streets-source', {
+            type: 'geojson',
+            data: 'data/roads.json.geojson'
+        });
+
+        map.addLayer({
+            'id': 'streets-layer',
+            'type': 'line', 
+            'source': 'streets-source',
+            'paint': {
+                'line-color': '#42a5f5',
+                'line-width': 4,
+                'line-opacity': 0.9
+            }
+        });
+
+        // --- 3. ЖИТЛОВІ РАЙОНИ (Темний) ---
+        map.addSource('buildings-source', {
+            type: 'geojson',
+            data: 'data/historical1.geojson'
+        });
+
+        map.addLayer({
+            'id': 'buildings-layer',
+            'type': 'fill-extrusion',
+            'source': 'buildings-source',
+            'paint': {
+                'fill-extrusion-color': '#FFB74D',
+                'fill-extrusion-height': ['get', 'height'], // Або фіксоване число 20
+                'fill-extrusion-base': 0,
+                'fill-extrusion-opacity': 0.9
+            }
+        });
+
+        // Світло
+        map.setLight({
+            anchor: 'viewport',
+            color: 'white',
+            intensity: 0.5,
+            position: [1.15, 210, 30]
+        });
+    });
+
+    // --- ФУНКЦІОНАЛ "ЛІФТА" ---
+    function elevateLayer(layerName) {
+        // 1. Спочатку опускаємо все на землю
+        resetLayers();
+
+        // 2. Піднімаємо вибраний шар
+        // Використовуємо transition для плавної анімації (Mapbox робить це автоматично для paint properties)
+        
+        if (layerName === 'parks') {
+            map.setPaintProperty('parks-layer', 'fill-extrusion-base', 0);
+            // Додаємо товщину до висоти підйому, щоб шар не став плоским
+            map.setPaintProperty('parks-layer', 'fill-extrusion-height', 80); 
+            setActiveButton(0);
+        } 
+        else if (layerName === 'streets') {
+            // УВАГА: Для ліній (type: line) немає властивості base-height.
+            // Щоб це спрацювало візуально, можна змінити колір або прозорість, 
+            // або використовувати fill-extrusion для доріг.
+            console.log("Lines cannot be vertically offset in standard Mapbox without terrain hacks.");
+            // Для демо - просто підсвітимо їх яскравіше
+            map.setPaintProperty('streets-layer', 'line-color', '#fff');
+            map.setPaintProperty('streets-layer', 'line-width', 6);
+            setActiveButton(1);
+        } 
+        else if (layerName === 'housing') {
+            map.setPaintProperty('buildings-layer', 'fill-extrusion-base', 0);
+            // Якщо висота береться з даних ['get', 'height'], нам треба складна формула
+            // Але для простоти додамо 300 до фіксованої висоти або використаємо expression
+            // ["+", ["get", "height"], 300]
+            
+            // Варіант 1 (простий, всі стають рівними на висоті):
+            // map.setPaintProperty('buildings-layer', 'fill-extrusion-height', 350);
+
+            // Варіант 2 (зберігаємо відносну висоту будинків):
+            // Це вимагає, щоб початкова висота була числом, а не expression у цьому прикладі
+            // Припустимо фіксовану висоту для "району" як плями:
+             map.setPaintProperty('buildings-layer', 'fill-extrusion-height', 50);
+            
+            setActiveButton(2);
+        }
+    }
+
+    function resetLayers() {
+        // Парки вниз
+        if (map.getLayer('parks-layer')) {
+            map.setPaintProperty('parks-layer', 'fill-extrusion-base', 0);
+            map.setPaintProperty('parks-layer', 'fill-extrusion-height', 5);
+        }
+
+        // Вулиці (скидання стилю)
+        if (map.getLayer('streets-layer')) {
+            map.setPaintProperty('streets-layer', 'line-color', '#42a5f5');
+            map.setPaintProperty('streets-layer', 'line-width', 3);
+        }
+
+        // Будинки вниз
+        if (map.getLayer('buildings-layer')) {
+            map.setPaintProperty('buildings-layer', 'fill-extrusion-base', 0);
+            map.setPaintProperty('buildings-layer', 'fill-extrusion-height', 5); // Повертаємо базову висоту
+        }
+        
+        // Скидання кнопок
+        document.querySelectorAll('.layer-btn').forEach(btn => btn.classList.remove('active'));
+    }
+
+    function setActiveButton(index) {
+        const buttons = document.querySelectorAll('.layer-btn');
+        buttons[index].classList.add('active');
+    }
+
+</script>
+
+</body>
+</html>
