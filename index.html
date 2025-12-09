@@ -6,138 +6,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+
     <style>
         body {
-    margin: 0;
-    padding: 0;
-    background-color: #000;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    width: 100%;
-    height: 100%;
-    overflow: hidden; 
-    position: fixed; 
-}
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; 
+            position: fixed; 
+        }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
         
-        /* --- НАВІГАЦІЯ (NAVBAR) --- */
+        /* --- NAVBAR --- */
         .navbar {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 80px;
+            top: 0; left: 0; width: 100%; height: 80px;
             background-color: #000;
-            display: flex;
-            align-items: center;
-            padding: 0 40px;
-            box-sizing: border-box;
-            z-index: 100;
+            display: flex; align-items: center; padding: 0 40px;
+            box-sizing: border-box; z-index: 100;
         }
-
         .nav-links a, .nav-lang a, .nav-logo {
-            color: #fff;
-            text-decoration: none;
-            text-transform: uppercase;
-            font-size: 14px;
-            letter-spacing: 1px;
-            transition: opacity 0.3s;
+            color: #fff; text-decoration: none; text-transform: uppercase;
+            font-size: 14px; letter-spacing: 1px; transition: opacity 0.3s;
         }
-
-        .nav-links a:hover, .nav-lang a:hover, .nav-logo:hover {
-            opacity: 0.7;
-        }
-
-        /* Стилі для картинки логотипу */
-        /* --- ЛОГОТИПИ --- */
-        .logo-img {
-            height: 40px; 
-            width: auto;  
-            margin-right: 15px; 
-            display: block;
-        }
-
-        /* Логіка перемикання: за замовчуванням (для ПК) */
+        .nav-links a:hover, .nav-lang a:hover, .nav-logo:hover { opacity: 0.7; }
+        .logo-img { height: 40px; width: auto; margin-right: 15px; display: block; }
         .logo-mobile { display: none; } 
         .logo-desktop { display: block; }
+        .nav-group-links { display: flex; gap: 30px; }
+        .nav-logo-container { display: flex; position: center; }
 
-        .logo-text {
-            font-weight: bold;
-            vertical-align: middle;
-            line-height: 1.2;
-            display: inline-block;
-            max-width: 100px; 
-            font-size: 12px;
-        }
-
-        .nav-group-links {
-            display: flex;
-            gap: 30px;
-        }
-
-        .nav-logo-container {
-            display: flex;
-            position: center; 
-        }
-
-        /* --- АДАПТИВНІСТЬ NAVBAR --- */
-
-        /* ПК (> 768px) */
         @media (min-width: 769px) {
-            .navbar {
-                justify-content: space-between;
-            }
+            .navbar { justify-content: space-between; }
             .nav-group-links { order: 1; }
             .nav-logo-container { order: 2; margin-left: 0; margin-right: 200px; }
             .nav-lang { order: 3; }
         }
-
-        /* МОБІЛЬНА ВЕРСІЯ (< 768px) */
         @media (max-width: 768px) {
-            .navbar {
-                height: 70px;
-                padding: 0 20px;
-                position: relative; 
-            }
-
-            .nav-logo-container { 
-                position: relative;
-                z-index: 2;
-            }
-
-            /* На мобільному прибираємо відступ картинки, бо тексту поруч немає */
-            .logo-img {
-                margin-right: 0;
-                height: 35px; /* Трохи менший логотип на телефоні */
-            }
-
+            .navbar { height: 70px; padding: 0 20px; position: relative; }
+            .nav-logo-container { position: relative; z-index: 2; }
+            .logo-img { margin-right: 0; height: 35px; }
             .nav-group-links {
-                position: absolute;
-                left: 58%;
-                top: 52%;
-                transform: translate(-50%, -50%);
-                gap: 24px;
-                width: 100%;
-                justify-content: center;
-                z-index: 1;
+                position: absolute; left: 58%; top: 52%; transform: translate(-50%, -50%);
+                gap: 24px; width: 100%; justify-content: center; z-index: 1;
             }
-            
-            .nav-links a {
-                font-size: 14px;
-                font-weight: 500;
-                letter-spacing: 0.5px;
-            }
-            
+            .nav-links a { font-size: 14px; font-weight: 500; letter-spacing: 0.5px; }
             .nav-lang { display: none; }
-            .logo-desktop { display: none !important; } /* Ховаємо ПК версію */
-            .logo-mobile { display: block !important; } /* Показуємо мобільну */
-
-            .logo-img {
-                margin-right: 0; /* Прибираємо відступ */
-                height: 35px;    /* Розмір для телефону */
-            }
+            .logo-desktop { display: none !important; } 
+            .logo-mobile { display: block !important; } 
         }
 
-        /* --- КНОПКИ КЕРУВАННЯ --- */
+        /* --- КНОПКИ КЕРУВАННЯ (Базові стилі для ПК) --- */
         .controls {
             position: absolute;
             bottom: 40px;
@@ -150,9 +76,45 @@
             border-radius: 50px;
             border: 1px solid #333;
             z-index: 10;
-            max-width: 90%; 
+            max-width: 95%; 
             box-sizing: border-box;
             justify-content: center;
+            width: fit-content;
+        }
+
+        /* --- БЛОК З ТЕКСТОМ --- */
+        .info-popup {
+            position: absolute;
+            bottom: 115px; /* Висота для ПК */
+            left: 50%;
+            transform: translateX(-50%);
+            
+            background: rgba(255, 255, 255, 1);
+            border: 1px solid #ffffff;
+            border-radius: 30px;
+            color: #000000;
+            
+            padding: 15px 25px;
+            z-index: 10;
+            
+            font-family: 'Manrope', sans-serif;
+            font-size: 16px; 
+            font-weight: 500;
+            line-height: 1.4;
+            
+            text-align: center;
+            box-sizing: border-box;
+            width: auto; 
+            min-width: 300px; /* Мінімальна ширина для ПК */
+            
+            display: none; 
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .info-popup.visible {
+            display: block;
+            opacity: 1;
         }
 
         .layer-btn {
@@ -168,32 +130,45 @@
             transition: all 0.3s ease;
             white-space: nowrap;
         }
-
-        .layer-btn:hover {
-            border-color: #fff;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-        }
-
+        .layer-btn:hover { border-color: #fff; box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
         .layer-btn.active {
-            background: #fff;
-            color: #000;
-            font-weight: bold;
+            background: #fff; color: #000; font-weight: bold;
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
         }
 
+        /* --- МОБІЛЬНА АДАПТАЦІЯ (СІТКА 2x2) --- */
         @media (max-width: 768px) {
-            .controls {
+            .controls { 
                 bottom: 30px;
-                padding: 10px 15px;
-                gap: 8px;
-                width: 95%;
+                width: 90%; /* Ширина блоку */
+                
+                /* Вмикаємо сітку */
+                display: grid; 
+                grid-template-columns: 1fr 1fr; /* Дві колонки однакової ширини */
+                gap: 10px; /* Відступ між кнопками */
+                
+                padding: 15px; /* Трохи більше місця всередині */
+                border-radius: 30px; /* Менший радіус, бо блок став квадратнішим */
             }
-            .layer-btn {
-                padding: 8px 12px;
-                font-size: 11px;
-                letter-spacing: 0.5px;
-                flex: 1;
+            
+            .info-popup { 
+                /* Піднімаємо вище, бо блок кнопок став вищим (2 ряди) */
+                bottom: 160px; 
+                width: 90%;
+                min-width: auto;
+                font-size: 14px; 
+                padding: 15px;
+                border-radius: 20px;
+            }
+
+            .layer-btn { 
+                /* Повертаємо комфортний розмір кнопок */
+                padding: 12px 10px; 
+                font-size: 13px; 
+                letter-spacing: 0.5px; 
+                width: 100%; /* Розтягуємо кнопку на всю ширину її комірки */
                 text-align: center;
+                border-radius: 15px; /* Радіус кнопок теж трохи менший */
             }
         }
     </style>
@@ -206,24 +181,23 @@
         <a href="https://pidsvitu.com/future">РОЗВИТОК</a>
         <a href="https://pidsvitu.com/about">ДЕТАЛЬНІШЕ</a>
     </div>
-
     <a href="https://pidsvitu.com" class="nav-logo-container nav-logo">
-        
         <img src="./logo.png" alt="Логотип" class="logo-img logo-desktop">
-        
         <img src="./logo2.png" alt="Логотип" class="logo-img logo-mobile">
     </a>
-
-    <div class="nav-lang">
-        <a href="#">UA/EN</a>
-    </div>
+    <div class="nav-lang"><a href="#">UA/EN</a></div>
 </nav>
 
 <div id="map"></div>
 
-<div class="controls">
+<div id="layer-info" class="info-popup">
+    Тут буде опис шару
+</div>
+
+<div class="controls" id="controls-box">
     <button class="layer-btn" onclick="elevateLayer('parks')">Парки</button>
-    <button class="layer-btn" onclick="elevateLayer('streets')">Головні вулиці</button>
+    <button class="layer-btn" onclick="elevateLayer('streets')">Магістралі</button>
+    <button class="layer-btn" onclick="elevateLayer('residential')">Житлові вулиці</button>
     <button class="layer-btn" onclick="elevateLayer('housing')">Історичний ареал</button>
 </div>
 
@@ -232,127 +206,131 @@
     mapboxgl.accessToken = 'pk.eyJ1IjoibHZpdiIsImEiOiJjbWl4MXQ0dG4wMmRoM2VzNzZvMzlmODVmIn0.FpjKdCBZR8neb-2imEu-xA';
 
     const isMobile = window.innerWidth < 768;
-
     const config = {
-        zoom: isMobile ? 11.7 : 13,
-        pitch: isMobile ? 30 : 45,
+        zoom: isMobile ? 12 : 13.8,
+        pitch: isMobile ? 40 : 52,
         roadWidth: isMobile ? 1.5 : 4,
         roadWidthActive: isMobile ? 3 : 6
+    };
+    
+    const layerTexts = {
+        'parks': '2200K + димерування. Найтепліше світло без синього спектра. Зберігає біоритми птахів та комах у зелених зонах, відповідаючи стандартам DarkSky.',
+        'streets': '3500K + обмежене димерування. Характер світла, який забезпечує контрастність та підвищену увагу для всіх учасників дорожнього руху',
+        'residential': "3000K + динамічне димерування. Характер світла, який турбується про здоров'я містян та комфортне середовище",
+        'housing': '2700K + динамічне димерування. Підкреслює атмосферу стародавнього Львова вночі. З турботою ппро текстуру історичних фасадів.'
     };
 
     const map = new mapboxgl.Map({
         container: 'map',
         style: {
-            "version": 8,
-            "name": "Dark Empty",
-            "sources": {},
-            "layers": [
-                {
-                    "id": "background",
-                    "type": "background",
-                    "paint": { "background-color": "#000" }
-                }
-            ]
+            "version": 8, "name": "Dark Empty", "sources": {},
+            "layers": [{ "id": "background", "type": "background", "paint": { "background-color": "#000" } }]
         },
-        center: [24.0311, 49.8329], 
-        zoom: config.zoom,
-        pitch: config.pitch,
-        bearing: 0,
-        antialias: true,
-        preserveDrawingBuffer: true,
-        interactive: false
+        center: [24.0311, 49.8329], zoom: config.zoom, pitch: config.pitch,
+        bearing: 0, antialias: true, preserveDrawingBuffer: true, interactive: false
     });
 
     map.on('load', () => {
         
-        map.addSource('parks-source', {
-            type: 'geojson',
-            data: './park.geojson' 
-        });
-
+        // 1. ПАРКИ (Зелений)
+        map.addSource('parks-source', { type: 'geojson', data: './park.geojson' });
         map.addLayer({
-            'id': 'parks-layer',
-            'type': 'fill-extrusion',
-            'source': 'parks-source',
-            'paint': {
-                'fill-extrusion-color': '#00e676',
+            'id': 'parks-layer', 'type': 'fill-extrusion', 'source': 'parks-source',
+            'paint': { 
+                'fill-extrusion-color': '#00e676', 
                 'fill-extrusion-height': 10, 
-                'fill-extrusion-base': 0,   
-                'fill-extrusion-opacity': 0.8
+                'fill-extrusion-base': 0, 
+                'fill-extrusion-opacity': 0.8 
             }
         });
 
-        map.addSource('streets-source', {
-            type: 'geojson',
-            data: './roads.json.geojson'
-        });
-
+        // 2. МАГІСТРАЛІ (Лінії)
+        map.addSource('streets-source', { type: 'geojson', data: './roads.json.geojson' });
         map.addLayer({
-            'id': 'streets-layer',
-            'type': 'line', 
-            'source': 'streets-source',
-            'paint': {
-                'line-color': '#42a5f5',
-                'line-width': config.roadWidth,
-                'line-opacity': 0.9
-            }
+            'id': 'streets-layer', 'type': 'line', 'source': 'streets-source',
+            'paint': { 'line-color': '#42a5f5', 'line-width': config.roadWidth, 'line-opacity': 0.9 }
         });
 
-        map.addSource('buildings-source', {
-            type: 'geojson',
-            data: './historical1.geojson'
-        });
-
+        // 3. ЖИТЛОВІ ВУЛИЦІ (historical2) - ТЕПЕР ЖОВТІ ТА ОБ'ЄМНІ
+        map.addSource('residential-source', { type: 'geojson', data: './historical2.geojson' });
         map.addLayer({
-            'id': 'buildings-layer',
-            'type': 'fill-extrusion',
-            'source': 'buildings-source',
-            'paint': {
-                'fill-extrusion-color': '#FFB74D',
-                'fill-extrusion-height': ['get', 'height'], 
+            'id': 'residential-layer', 
+            'type': 'fill-extrusion',  // Змінено з line на fill-extrusion
+            'source': 'residential-source',
+            'paint': { 
+                'fill-extrusion-color': '#FFD600', // Жовтий колір
+                'fill-extrusion-height': 10,       // Базова висота (низька)
                 'fill-extrusion-base': 0,
-                'fill-extrusion-opacity': 0.9
+                'fill-extrusion-opacity': 0.9 
             }
         });
 
-        map.setLight({
-            anchor: 'viewport',
-            color: 'white',
-            intensity: 0.5,
-            position: [1.15, 210, 30]
+        // 4. ІСТОРИЧНІ БУДИНКИ (historical3) - ТЕПЕР ОРАНЖЕВІ
+        map.addSource('buildings-source', { type: 'geojson', data: './historical3.geojson' });
+        map.addLayer({
+            'id': 'buildings-layer', 'type': 'fill-extrusion', 'source': 'buildings-source',
+            'paint': { 
+                'fill-extrusion-color': '#FF6D00', // Оранжевий колір (насиченіший)
+                'fill-extrusion-height': ['get', 'height'], // Висота з даних
+                'fill-extrusion-base': 0, 
+                'fill-extrusion-opacity': 0.9 
+            }
         });
+
+        map.setLight({ anchor: 'viewport', color: 'white', intensity: 0.5, position: [1.15, 210, 30] });
     });
 
-    // --- ФУНКЦІЯ, ЯКОЇ НЕ ВИСТАЧАЛО ---
     function resetLayers() {
-        // Скидаємо кнопки
         const buttons = document.querySelectorAll('.layer-btn');
         buttons.forEach(btn => btn.classList.remove('active'));
-
-        // Перевіряємо, чи карта завантажена, щоб уникнути помилок
-        if (!map.getLayer('parks-layer')) return;
-
-        // 1. Скидаємо Парки до початкових значень
-        map.setPaintProperty('parks-layer', 'fill-extrusion-height', 10);
-        map.setPaintProperty('parks-layer', 'fill-extrusion-base', 0);
         
-        // 2. Скидаємо Вулиці
-        map.setPaintProperty('streets-layer', 'line-color', '#42a5f5');
-        map.setPaintProperty('streets-layer', 'line-width', config.roadWidth);
+        const infoPopup = document.getElementById('layer-info');
+        infoPopup.classList.remove('visible');
+        setTimeout(() => {
+            if(!infoPopup.classList.contains('visible')) {
+                infoPopup.style.display = 'none';
+            }
+        }, 300);
 
-        // 3. Скидаємо Будинки (повертаємо висоту з даних GeoJSON)
-        map.setPaintProperty('buildings-layer', 'fill-extrusion-height', ['get', 'height']);
-        map.setPaintProperty('buildings-layer', 'fill-extrusion-base', 0);
+        if (map.getLayer('parks-layer')) {
+            map.setPaintProperty('parks-layer', 'fill-extrusion-height', 10);
+        }
+        if (map.getLayer('streets-layer')) {
+            map.setPaintProperty('streets-layer', 'line-color', '#42a5f5');
+            map.setPaintProperty('streets-layer', 'line-width', config.roadWidth);
+        }
+        
+        // Скидання висоти для Житлових (Жовтих)
+        if (map.getLayer('residential-layer')) {
+            map.setPaintProperty('residential-layer', 'fill-extrusion-height', 10); // Повертаємо вниз
+        }
+        
+        // Скидання висоти для Історичних (Оранжевих)
+        if (map.getLayer('buildings-layer')) {
+            // Повертаємо оригінальну висоту з файлу
+            map.setPaintProperty('buildings-layer', 'fill-extrusion-height', ['get', 'height']);
+        }
     }
 
     function elevateLayer(layerName) {
-        // Спочатку скидаємо все до норми
         resetLayers();
         
+        const infoPopup = document.getElementById('layer-info');
+        const controlsBox = document.getElementById('controls-box');
+        
+        if (layerTexts[layerName]) {
+            infoPopup.textContent = layerTexts[layerName];
+            if (controlsBox) {
+                infoPopup.style.maxWidth = controlsBox.offsetWidth + 'px';
+            }
+            infoPopup.style.display = 'block';
+            setTimeout(() => {
+                infoPopup.classList.add('visible');
+            }, 10);
+        }
+
         if (layerName === 'parks') {
             map.setPaintProperty('parks-layer', 'fill-extrusion-height', 80); 
-            // Можна додати справжній "ліфт" (підняття над землею), якщо змінити base:
-            // map.setPaintProperty('parks-layer', 'fill-extrusion-base', 20); 
             setActiveButton(0);
         } 
         else if (layerName === 'streets') {
@@ -360,10 +338,15 @@
             map.setPaintProperty('streets-layer', 'line-width', config.roadWidthActive);
             setActiveButton(1);
         } 
-        else if (layerName === 'housing') {
-            // Тут ми робимо будинки однакової висоти (50), щоб виділити їх
-            map.setPaintProperty('buildings-layer', 'fill-extrusion-height', 50);
+        else if (layerName === 'residential') {
+            // Піднімаємо Жовті (Житлові)
+            map.setPaintProperty('residential-layer', 'fill-extrusion-height', 70); 
             setActiveButton(2);
+        }
+        else if (layerName === 'housing') {
+            // Піднімаємо Оранжеві (Історичні) на фіксовану висоту, щоб виділити
+            map.setPaintProperty('buildings-layer', 'fill-extrusion-height', 70);
+            setActiveButton(3);
         }
     }
 
@@ -373,9 +356,7 @@
             buttons[index].classList.add('active');
         }
     }
-
 </script>
 
 </body>
 </html>
-
