@@ -271,7 +271,7 @@
             'id': 'buildings-layer', 'type': 'fill-extrusion', 'source': 'buildings-source',
             'paint': { 
                 'fill-extrusion-color': '#FF6D00', // Оранжевий колір (насиченіший)
-                'fill-extrusion-height': ['get', 'height'], // Висота з даних
+                'fill-extrusion-height': 10, // Висота з даних
                 'fill-extrusion-base': 0, 
                 'fill-extrusion-opacity': 0.9 
             }
@@ -308,7 +308,7 @@
         // Скидання висоти для Історичних (Оранжевих)
         if (map.getLayer('buildings-layer')) {
             // Повертаємо оригінальну висоту з файлу
-            map.setPaintProperty('buildings-layer', 'fill-extrusion-height', ['get', 'height']);
+            map.setPaintProperty('buildings-layer', 'fill-extrusion-height', 10);
         }
     }
 
@@ -360,3 +360,4 @@
 
 </body>
 </html>
+
