@@ -2,12 +2,21 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Lviv 3D Map Visualization</title>
+    <title>Підсвітити ліхтар</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
     <style>
-        body { margin: 0; padding: 0; background-color: #000; font-family: 'Helvetica Neue', Arial, sans-serif; }
+        body {
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; 
+    position: fixed; 
+}
         #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
         
         /* --- НАВІГАЦІЯ (NAVBAR) --- */
@@ -200,9 +209,9 @@
 
     <a href="https://pidsvitu.com" class="nav-logo-container nav-logo">
         
-        <img src="./logo.png" alt="Логотип" class="logo-img logo-desktop">
+        <img src="data/logo.png" alt="Логотип" class="logo-img logo-desktop">
         
-        <img src="./logo2.png" alt="Логотип" class="logo-img logo-mobile">
+        <img src="data/logo2.png" alt="Логотип" class="logo-img logo-mobile">
     </a>
 
     <div class="nav-lang">
@@ -214,7 +223,7 @@
 
 <div class="controls">
     <button class="layer-btn" onclick="elevateLayer('parks')">Парки</button>
-    <button class="layer-btn" onclick="elevateLayer('streets')">Магістралі</button>
+    <button class="layer-btn" onclick="elevateLayer('streets')">Головні вулиці</button>
     <button class="layer-btn" onclick="elevateLayer('housing')">Історичний ареал</button>
 </div>
 
@@ -225,7 +234,7 @@
     const isMobile = window.innerWidth < 768;
 
     const config = {
-        zoom: isMobile ? 11 : 13.2,
+        zoom: isMobile ? 11.7 : 13,
         pitch: isMobile ? 30 : 45,
         roadWidth: isMobile ? 1.5 : 4,
         roadWidthActive: isMobile ? 3 : 6
@@ -251,14 +260,14 @@
         bearing: 0,
         antialias: true,
         preserveDrawingBuffer: true,
-        interactive: true
+        interactive: false
     });
 
     map.on('load', () => {
         
         map.addSource('parks-source', {
             type: 'geojson',
-            data: './park.geojson' 
+            data: 'data/park.geojson' 
         });
 
         map.addLayer({
@@ -275,7 +284,7 @@
 
         map.addSource('streets-source', {
             type: 'geojson',
-            data: './roads.json.geojson'
+            data: 'data/roads.json.geojson'
         });
 
         map.addLayer({
@@ -291,7 +300,7 @@
 
         map.addSource('buildings-source', {
             type: 'geojson',
-            data: './historical1.geojson'
+            data: 'data/historical1.geojson'
         });
 
         map.addLayer({
@@ -306,7 +315,6 @@
             }
         });
 
-
         map.setLight({
             anchor: 'viewport',
             color: 'white',
@@ -315,12 +323,36 @@
         });
     });
 
+    // --- ФУНКЦІЯ, ЯКОЇ НЕ ВИСТАЧАЛО ---
+    function resetLayers() {
+        // Скидаємо кнопки
+        const buttons = document.querySelectorAll('.layer-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+
+        // Перевіряємо, чи карта завантажена, щоб уникнути помилок
+        if (!map.getLayer('parks-layer')) return;
+
+        // 1. Скидаємо Парки до початкових значень
+        map.setPaintProperty('parks-layer', 'fill-extrusion-height', 10);
+        map.setPaintProperty('parks-layer', 'fill-extrusion-base', 0);
+        
+        // 2. Скидаємо Вулиці
+        map.setPaintProperty('streets-layer', 'line-color', '#42a5f5');
+        map.setPaintProperty('streets-layer', 'line-width', config.roadWidth);
+
+        // 3. Скидаємо Будинки (повертаємо висоту з даних GeoJSON)
+        map.setPaintProperty('buildings-layer', 'fill-extrusion-height', ['get', 'height']);
+        map.setPaintProperty('buildings-layer', 'fill-extrusion-base', 0);
+    }
+
     function elevateLayer(layerName) {
+        // Спочатку скидаємо все до норми
         resetLayers();
         
         if (layerName === 'parks') {
-            map.setPaintProperty('parks-layer', 'fill-extrusion-base', 0);
             map.setPaintProperty('parks-layer', 'fill-extrusion-height', 80); 
+            // Можна додати справжній "ліфт" (підняття над землею), якщо змінити base:
+            // map.setPaintProperty('parks-layer', 'fill-extrusion-base', 20); 
             setActiveButton(0);
         } 
         else if (layerName === 'streets') {
@@ -329,21 +361,20 @@
             setActiveButton(1);
         } 
         else if (layerName === 'housing') {
-            map.setPaintProperty('buildings-layer', 'fill-extrusion-base', 0);
+            // Тут ми робимо будинки однакової висоти (50), щоб виділити їх
             map.setPaintProperty('buildings-layer', 'fill-extrusion-height', 50);
             setActiveButton(2);
         }
     }
 
-
-
     function setActiveButton(index) {
         const buttons = document.querySelectorAll('.layer-btn');
-        buttons[index].classList.add('active');
+        if(buttons[index]) {
+            buttons[index].classList.add('active');
+        }
     }
 
 </script>
 
 </body>
 </html>
-
